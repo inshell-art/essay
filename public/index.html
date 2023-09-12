@@ -1,0 +1,108 @@
+<!-- This code adds an emoji favicon to the webpage. -->
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>essay</title>
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@200&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #1A1919;
+      margin: 0;
+      padding: 0;
+    }
+
+    .ql-editor {
+      font-family: 'Source Code Pro', monospace;
+      font-weight: 200;
+      font-size: 16px;
+      color: white
+    }
+
+    #editor-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* Remove the border */
+    .ql-container.ql-snow {
+      border: none;
+    }
+
+    #editor {
+      width: 700px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="editor-container">
+    <div id="editor"></div>
+  </div>
+
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+  <script>
+    // Initialize Quill
+    var quill = new Quill('#editor', {
+      theme: 'snow',
+      modules: {
+        toolbar: false
+      }
+    });
+
+    console.log("Quill initialized");  // Debugging log
+
+    quill.on('text-change', function (delta, oldDelta, source) {
+      if (source === 'user') {
+        // Get the entire text
+        const text = quill.getText();
+
+        // Split the text into lines
+        const lines = text.split('\n');
+
+        // Loop through each line to check if it starts with '$'
+        lines.forEach((line, index) => {
+          if (line.startsWith('$')) {
+            console.log(`Line ${index + 1} starts with '$'`);
+          }
+        });
+      }
+    });
+
+
+
+
+
+
+
+
+    // Load content from localStorage if available
+    const savedContent = localStorage.getItem('autosave');
+    if (savedContent) {
+      console.log("Loading from localStorage:", savedContent);
+      quill.setContents(JSON.parse(savedContent));
+    } else {
+      console.log("No saved content in localStorage");
+    }
+
+    let saveInterval = 5000; // Save every 5 seconds
+    let timeoutId;
+
+    quill.on('text-change', function (delta, oldDelta, source) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(function () {
+        const content = quill.getContents();
+        console.log("Saving to localStorage:", content);
+        localStorage.setItem('autosave', JSON.stringify(content));
+      }, saveInterval);
+    });
+
+  </script>
+</body>
+
+</html>
