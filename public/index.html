@@ -5,7 +5,7 @@
 <head>
   <title>essay</title>
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@200&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@200;400&display=swap" rel="stylesheet">
   <style>
     body {
       background-color: #1A1919;
@@ -15,10 +15,15 @@
 
     .ql-editor {
       font-family: 'Source Code Pro', monospace;
-      font-weight: 200;
       font-size: 16px;
+      font-weight: 200;
       color: white
     }
+
+    .ql-anchor-title {
+      font-weight: 400 !important;
+    }
+
 
     #editor-container {
       display: flex;
@@ -59,34 +64,20 @@
 
     quill.on('text-change', function (delta, oldDelta, source) {
       if (source === 'user') {
-        // Get the entire text
         const text = quill.getText();
-
-        // Split the text into lines
         const lines = text.split('\n');
+        const editor = document.querySelector('.ql-editor');
+        const children = Array.from(editor.childNodes);
 
-        // Loop through each line to check if it starts with '$'
-        lines.forEach((line, index) => {
-          if (line.startsWith('$')) {
-            console.log(`Line ${index + 1} starts with '$'`);
+        children.forEach((child, index) => {
+          if (lines[index] && lines[index].startsWith('$')) {
+            child.classList.add('ql-anchor-title');
+          } else {
+            child.classList.remove('ql-anchor-title');
           }
         });
       }
     });
-    // it's necessary probably to define anchor first: the contents in two next anchor titles with the first anchor title
-    // Comprehend quill.on and add detection for $ then 
-    // make the anchor title bold, and one more line add by enter
-    // make the $ triggers the anchor checking function: 
-    //if there is nothing worth to check for the previous anchor, don't show the floating layer
-    // if yes, show the floating layer, and the floating layer should be a list of the possible anchors
-    // user can insert the anchor by clicking the anchor in the floating layer or ignore 
-
-
-
-
-
-
-
 
     // Load content from localStorage if available
     const savedContent = localStorage.getItem('autosave');
