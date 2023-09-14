@@ -15,6 +15,7 @@
 
     .ql-editor {
       font-family: 'Source Code Pro', monospace;
+      padding: 0;
       font-size: 16px;
       font-weight: 200;
       color: white
@@ -24,28 +25,65 @@
       font-weight: 400 !important;
     }
 
-
-    #editor-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      width: 100vw;
-    }
-
     /* Remove the border */
     .ql-container.ql-snow {
       border: none;
     }
 
-    #editor {
+    #title-container,
+    #date-container,
+    #editor-container {
       width: 700px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    #article-title,
+    #article-date {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-family: 'Source Code Pro', monospace;
+      font-weight: 200;
+      background-color: #1A1919;
+    }
+
+    #article-title {
+      padding: 50px 0px 0px 0px;
+      /* Top, Right, Bottom, Left */
+      color: white;
+      resize: none;
+      /* Disable manual resizing */
+      overflow: hidden;
+      /* Hide scrollbar */
+      font-size: 24px;
+    }
+
+    #article-date {
+      padding: 0px 0px 50px 0px;
+      /* Top, Right, Bottom, Left */
+      /* Uniform padding */
+      color: #5b5b5b;
+      height: 30px;
+      /* Set appropriate height */
+      font-size: 16px;
     }
   </style>
 
 </head>
 
 <body>
+  <!-- Article Title -->
+  <div id="title-container">
+    <textarea id="article-title" placeholder="Article Title" rows="1"></textarea>
+  </div>
+
+  <!-- Date -->
+  <div id="date-container">
+    <input type="text" id="article-date" placeholder="Date">
+  </div>
+
+  <!-- Editor -->
   <div id="editor-container">
     <div id="editor"></div>
   </div>
@@ -60,8 +98,7 @@
       }
     });
 
-    console.log("Quill initialized");  // Debugging log
-
+    // Add symbol $ as a indicator for anchor title
     quill.on('text-change', function (delta, oldDelta, source) {
       if (source === 'user') {
         const text = quill.getText();
@@ -83,7 +120,8 @@
     const savedContent = localStorage.getItem('autosave');
     if (savedContent) {
       console.log("Loading from localStorage:", savedContent);
-      quill.setContents(JSON.parse(savedContent));
+      const editor = document.querySelector('.ql-editor');
+      editor.innerHTML = savedContent;
     } else {
       console.log("No saved content in localStorage");
     }
@@ -94,11 +132,46 @@
     quill.on('text-change', function (delta, oldDelta, source) {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(function () {
-        const content = quill.getContents();
-        console.log("Saving to localStorage:", content);
-        localStorage.setItem('autosave', JSON.stringify(content));
+        const editor = document.querySelector('.ql-editor');
+        const html = editor.innerHTML;
+        console.log("Saving to localStorage:");
+        localStorage.setItem('autosave', html);
       }, saveInterval);
     });
+
+    // Set scroll for editor with bugs like no room at bottom and copy-paste doesn't work
+    quill.on('text-change', function (delta, oldDelta, source) {
+      // Your existing logic here
+      // ...
+
+      // Scroll to the bottom
+      const editor = document.querySelector('.ql-editor');
+      editor.scrollIntoView(false);
+    });
+
+    // Get the height of article-title, the value isn't the same as the height after typing in
+    // So it will cause a bit moving unexpectedly
+    // An approach is hardcode as 80, it works for chrome but not for safari and firefox, and it's not a good practice
+    // So, keep the manner here, and will see if it's necessary to fix it later
+    const initialHeight = document.getElementById('article-title').scrollHeight;
+
+    function adjustTitleHeight() {
+      const titleInput = document.getElementById('article-title');
+
+      if (titleInput.value === '') {
+        titleInput.style.height = initialHeight + 'px';
+      } else {
+        titleInput.style.height = 'auto'; // Reset the height to auto to recalculate
+        const newHeight = Math.max(titleInput.scrollHeight, initialHeight);
+        titleInput.style.height = newHeight + 'px'; // Adjust the height based on scrollHeight
+      }
+    }
+
+    // Attach the function to the input event
+    document.getElementById('article-title').addEventListener('input', adjustTitleHeight);
+
+    // Call the function once to set the initial height
+    adjustTitleHeight();
 
   </script>
 </body>
